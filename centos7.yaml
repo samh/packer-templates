@@ -1,0 +1,92 @@
+# This YAML input is used to create JSON configuration for Packer.
+---
+variables:
+  cpus: "2"
+  disk_size_mb: "81920"
+  # Set to "false" to get more diagnostic information.
+  # Defaults to false because I prefer to see what's going on, and not have
+  # to wonder if it's hanging.
+  headless: "false"
+  memory_mb: "512"
+  vm_name: "packer-centos-7"
+
+  ansible_playbook_file: "ansible/main.yml"
+  ansible_galaxy_file: "ansible/requirements.yml"
+  ansible_staging_directory: "/opt/packer-ansible"
+
+  cleanup_remove_ansible: "false"
+  # Set to "true" to zero out free space on the root partition (takes a while)
+  cleanup_zero_free: "true"
+
+
+provisioners:
+- type: shell
+  execute_command: echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'
+  environment_vars:
+  - "ANSIBLE_STAGING_DIRECTORY={{user `ansible_staging_directory`}}"
+  scripts:
+    - scripts/install_ansible.sh
+
+- type: ansible-local
+  # Copy the entire directory instead of just the playbook file
+  playbook_dir: "ansible"
+  playbook_file: "{{user `ansible_playbook_file`}}"
+  galaxy_file: "{{user `ansible_galaxy_file`}}"
+  staging_directory: "{{user `ansible_staging_directory`}}"
+
+# Zeroes free space to make the image smaller. Disable for now, because it's slow.
+- type: shell
+  execute_command: echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'
+  environment_vars:
+    - "REMOVE_ANSIBLE={{user `cleanup_remove_ansible`}}"
+    - "ZERO_FREE={{user `cleanup_zero_free`}}"
+  script: scripts/cleanup.sh
+
+# These settings are shared by all builders.
+# The generation script will merge this info into each of the builder definitions.
+_builder_common: &builder_common_options
+  boot_command:
+  - <tab> ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg<enter><wait>
+  #- <tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg<enter><wait>
+  boot_wait: 10s
+  disk_size: "{{user `disk_size_mb`}}"
+  headless: "{{user `headless`}}"
+  http_directory: http
+  iso_urls:
+  - CentOS-7-x86_64-Minimal-1804.iso
+  - http://mirrors.ocf.berkeley.edu/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1804.iso
+  iso_checksum_type: sha256
+  iso_checksum: 714acc0aefb32b7d51b515e25546835e55a90da9fb00417fbee2d03a62801efd
+  ssh_username: vagrant
+  ssh_password: vagrant
+  ssh_port: 22
+  ssh_wait_timeout: 10000s
+  shutdown_command: echo 'vagrant'|sudo -S /sbin/halt -h -p
+  vm_name: '{{user `vm_name`}}'
+  #output_directory: "output-{{build_type}}/{{user `vm_name`}}"
+  output_directory: "{{user `vm_name`}}-{{build_type}}"
+
+builders:
+- type: virtualbox-iso
+  <<: *builder_common_options
+  guest_os_type: RedHat_64
+  guest_additions_path: VBoxGuestAdditions_{{.Version}}.iso
+  virtualbox_version_file: .vbox_version
+  vboxmanage:
+  - [modifyvm, '{{.Name}}', --memory, '{{user `memory_mb`}}']
+  - [modifyvm, '{{.Name}}', --cpus, '{{user `cpus`}}']
+
+- type: vmware-iso
+  <<: *builder_common_options
+  guest_os_type: centos-64
+  shutdown_command: echo 'vagrant'|sudo -S /sbin/halt -h -p
+  tools_upload_flavor: linux
+  skip_compaction: false
+  vmx_data:
+    cpuid.coresPerSocket: '1'
+    memsize: '{{user `memory_mb`}}'
+    numvcpus: '{{user `cpus`}}'
+
+#post-processors:
+#- output: builds/{{.Provider}}-centos7.box
+#  type: vagrant
