@@ -3,5 +3,12 @@
   become: yes
   gather_facts: yes
 
-  roles:
-    - packer_rhel
+  tasks:
+    - include_role:
+        name: packer_rhel
+      when: ansible_os_family|lower == 'redhat'
+
+    # Currently failing.
+#    - include_role:
+#        name: geerlingguy.packer-debian
+#      when: ansible_os_family|lower == 'debian'

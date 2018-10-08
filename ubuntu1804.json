@@ -1,0 +1,208 @@
+{
+  "variables": {
+    "cpus": "2",
+    "disk_size_mb": "81920",
+    "headless": "false",
+    "memory_mb": "512",
+    "vm_name": "packer-ubuntu1804",
+    "boot_key_interval": "100ms",
+    "ansible_playbook_file": "ansible/main.yml",
+    "ansible_galaxy_file": "ansible/requirements.yml",
+    "ansible_staging_directory": "/opt/packer-ansible",
+    "cleanup_remove_ansible": "false",
+    "cleanup_zero_free": "true"
+  },
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
+      "environment_vars": [
+        "ANSIBLE_STAGING_DIRECTORY={{user `ansible_staging_directory`}}"
+      ],
+      "scripts": [
+        "scripts/install_ansible.sh",
+        "scripts/setup_debian.sh"
+      ]
+    },
+    {
+      "type": "ansible-local",
+      "playbook_dir": "ansible",
+      "playbook_file": "{{user `ansible_playbook_file`}}",
+      "galaxy_file": "{{user `ansible_galaxy_file`}}",
+      "staging_directory": "{{user `ansible_staging_directory`}}"
+    },
+    {
+      "type": "shell",
+      "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
+      "environment_vars": [
+        "REMOVE_ANSIBLE={{user `cleanup_remove_ansible`}}",
+        "ZERO_FREE={{user `cleanup_zero_free`}}"
+      ],
+      "script": "scripts/cleanup.sh"
+    }
+  ],
+  "_builder_common": {
+    "boot_command": [
+      "<esc><wait>",
+      "<esc><wait>",
+      "<enter><wait>",
+      "/install/vmlinuz<wait>",
+      " auto<wait>",
+      " console-setup/ask_detect=false<wait>",
+      " console-setup/layoutcode=us<wait>",
+      " console-setup/modelcode=pc105<wait>",
+      " debconf/frontend=noninteractive<wait>",
+      " debian-installer=en_US<wait>",
+      " fb=false<wait>",
+      " initrd=/install/initrd.gz<wait>",
+      " kbd-chooser/method=us<wait>",
+      " keyboard-configuration/layout=USA<wait>",
+      " keyboard-configuration/variant=USA<wait>",
+      " locale=en_US<wait>",
+      " netcfg/get_domain=vm<wait>",
+      " netcfg/get_hostname=vagrant<wait>",
+      " grub-installer/bootdev=/dev/sda<wait>",
+      " noapic<wait>",
+      " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg<wait>",
+      " -- <wait>",
+      "<enter><wait>"
+    ],
+    "boot_wait": "10s",
+    "boot_key_interval": "{{user `boot_key_interval`}}",
+    "disk_size": "{{user `disk_size_mb`}}",
+    "headless": "{{user `headless`}}",
+    "http_directory": "http",
+    "iso_urls": [
+      "iso/ubuntu-18.04.1-server-amd64.iso",
+      "http://cdimage.ubuntu.com/ubuntu/releases/bionic/release/ubuntu-18.04.1-server-amd64.iso"
+    ],
+    "iso_checksum_type": "sha256",
+    "iso_checksum": "a5b0ea5918f850124f3d72ef4b85bda82f0fcd02ec721be19c1a6952791c8ee8",
+    "ssh_username": "vagrant",
+    "ssh_password": "vagrant",
+    "ssh_port": 22,
+    "ssh_wait_timeout": "10000s",
+    "shutdown_command": "echo 'vagrant'|sudo -S /sbin/halt -h -p",
+    "vm_name": "{{user `vm_name`}}",
+    "output_directory": "{{user `vm_name`}}-{{build_type}}"
+  },
+  "builders": [
+    {
+      "type": "virtualbox-iso",
+      "guest_os_type": "Ubuntu_64",
+      "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
+      "virtualbox_version_file": ".vbox_version",
+      "vboxmanage": [
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--memory",
+          "{{user `memory_mb`}}"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--cpus",
+          "{{user `cpus`}}"
+        ]
+      ],
+      "boot_command": [
+        "<esc><wait>",
+        "<esc><wait>",
+        "<enter><wait>",
+        "/install/vmlinuz<wait>",
+        " auto<wait>",
+        " console-setup/ask_detect=false<wait>",
+        " console-setup/layoutcode=us<wait>",
+        " console-setup/modelcode=pc105<wait>",
+        " debconf/frontend=noninteractive<wait>",
+        " debian-installer=en_US<wait>",
+        " fb=false<wait>",
+        " initrd=/install/initrd.gz<wait>",
+        " kbd-chooser/method=us<wait>",
+        " keyboard-configuration/layout=USA<wait>",
+        " keyboard-configuration/variant=USA<wait>",
+        " locale=en_US<wait>",
+        " netcfg/get_domain=vm<wait>",
+        " netcfg/get_hostname=vagrant<wait>",
+        " grub-installer/bootdev=/dev/sda<wait>",
+        " noapic<wait>",
+        " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg<wait>",
+        " -- <wait>",
+        "<enter><wait>"
+      ],
+      "boot_wait": "10s",
+      "boot_key_interval": "{{user `boot_key_interval`}}",
+      "disk_size": "{{user `disk_size_mb`}}",
+      "headless": "{{user `headless`}}",
+      "http_directory": "http",
+      "iso_urls": [
+        "iso/ubuntu-18.04.1-server-amd64.iso",
+        "http://cdimage.ubuntu.com/ubuntu/releases/bionic/release/ubuntu-18.04.1-server-amd64.iso"
+      ],
+      "iso_checksum_type": "sha256",
+      "iso_checksum": "a5b0ea5918f850124f3d72ef4b85bda82f0fcd02ec721be19c1a6952791c8ee8",
+      "ssh_username": "vagrant",
+      "ssh_password": "vagrant",
+      "ssh_port": 22,
+      "ssh_wait_timeout": "10000s",
+      "shutdown_command": "echo 'vagrant'|sudo -S /sbin/halt -h -p",
+      "vm_name": "{{user `vm_name`}}",
+      "output_directory": "{{user `vm_name`}}-{{build_type}}"
+    },
+    {
+      "type": "vmware-iso",
+      "guest_os_type": "ubuntu-64",
+      "tools_upload_flavor": "linux",
+      "skip_compaction": false,
+      "vmx_data": {
+        "cpuid.coresPerSocket": "{{user `cpus`}}",
+        "memsize": "{{user `memory_mb`}}",
+        "numvcpus": "1"
+      },
+      "boot_command": [
+        "<esc><wait>",
+        "<esc><wait>",
+        "<enter><wait>",
+        "/install/vmlinuz<wait>",
+        " auto<wait>",
+        " console-setup/ask_detect=false<wait>",
+        " console-setup/layoutcode=us<wait>",
+        " console-setup/modelcode=pc105<wait>",
+        " debconf/frontend=noninteractive<wait>",
+        " debian-installer=en_US<wait>",
+        " fb=false<wait>",
+        " initrd=/install/initrd.gz<wait>",
+        " kbd-chooser/method=us<wait>",
+        " keyboard-configuration/layout=USA<wait>",
+        " keyboard-configuration/variant=USA<wait>",
+        " locale=en_US<wait>",
+        " netcfg/get_domain=vm<wait>",
+        " netcfg/get_hostname=vagrant<wait>",
+        " grub-installer/bootdev=/dev/sda<wait>",
+        " noapic<wait>",
+        " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg<wait>",
+        " -- <wait>",
+        "<enter><wait>"
+      ],
+      "boot_wait": "10s",
+      "boot_key_interval": "{{user `boot_key_interval`}}",
+      "disk_size": "{{user `disk_size_mb`}}",
+      "headless": "{{user `headless`}}",
+      "http_directory": "http",
+      "iso_urls": [
+        "iso/ubuntu-18.04.1-server-amd64.iso",
+        "http://cdimage.ubuntu.com/ubuntu/releases/bionic/release/ubuntu-18.04.1-server-amd64.iso"
+      ],
+      "iso_checksum_type": "sha256",
+      "iso_checksum": "a5b0ea5918f850124f3d72ef4b85bda82f0fcd02ec721be19c1a6952791c8ee8",
+      "ssh_username": "vagrant",
+      "ssh_password": "vagrant",
+      "ssh_port": 22,
+      "ssh_wait_timeout": "10000s",
+      "shutdown_command": "echo 'vagrant'|sudo -S /sbin/halt -h -p",
+      "vm_name": "{{user `vm_name`}}",
+      "output_directory": "{{user `vm_name`}}-{{build_type}}"
+    }
+  ]
+}

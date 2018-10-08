@@ -5,3 +5,6 @@
 # (don't want to install git yet - prefer the SCL version later).
 - src: https://github.com/samh/ansible-role-packer-rhel/archive/master.tar.gz
   name: packer_rhel
+
+# Currently not working.
+#- name: geerlingguy.packer-debian

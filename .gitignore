@@ -1,3 +1,4 @@
+/iso
 # Output VMs
 /packer-*
 *.7z

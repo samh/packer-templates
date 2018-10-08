@@ -83,3 +83,11 @@ def centos7(c, generate=True, build_type=DEFAULT_BUILD_TYPE, on_error=DEFAULT_ON
     Build CentOS7.
     """
     build(c, 'centos7.json', generate=generate, build_type=build_type, on_error=on_error)
+
+
+@task(help=BUILD_HELP)
+def ubuntu1804(c, generate=True, build_type=DEFAULT_BUILD_TYPE, on_error=DEFAULT_ON_ERROR):
+    """
+    Build Ubuntu 18.04.
+    """
+    build(c, 'ubuntu1804.json', generate=generate, build_type=build_type, on_error=on_error)
