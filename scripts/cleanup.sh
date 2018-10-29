@@ -36,5 +36,5 @@ else
     echo "Skipping zeroing of free space"
 fi
 
-echo "Running `sync` so Packer doesn't quit too early, before the large file is deleted."
+echo "Running 'sync' so Packer doesn't quit too early, before the large file is deleted."
 sync
