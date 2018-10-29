@@ -25,6 +25,8 @@ Install Python requirements using [pipenv](https://docs.pipenv.org/):
 ### Invoke Tasks
 There is an [Invoke](http://www.pyinvoke.org/) script (`tasks.py`) for running common tasks.
 
+*To use invoke from PyCharm (possibly also other IDEs), create run configurations with the "Module name" set to `invoke`.*
+
 First activate the virtualenv so Invoke is available:
 
     $ pipenv shell
@@ -47,9 +49,7 @@ MIT license.
 
 ## Author Information
 
-Created in 2018 by [Sam Hartsfield](http://samhartsfield.com/).
-
-Based on:
+Created in 2018 by [Sam Hartsfield](http://samhartsfield.com/), largely based on Jeff Geerling's templates:
 
 * https://github.com/geerlingguy/packer-centos-7
 * https://github.com/geerlingguy/packer-ubuntu-1804
