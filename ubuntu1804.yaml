@@ -9,7 +9,12 @@ variables:
   headless: "false"
   memory_mb: "512"
   vm_name: "packer-ubuntu1804"
+
+  # VMware
   boot_key_interval: 100ms
+  # VirtualBox
+  boot_keygroup_interval: 100ms
+  skip_export: "false" # When enabled, Packer will not export the VM (to OVF format)
 
   ansible_playbook_file: "ansible/main.yml"
   ansible_galaxy_file: "ansible/requirements.yml"
@@ -72,7 +77,6 @@ _builder_common: &builder_common_options
     - " -- <wait>"
     - "<enter><wait>"
   boot_wait: 10s
-  boot_key_interval: "{{user `boot_key_interval`}}"
   disk_size: "{{user `disk_size_mb`}}"
   headless: "{{user `headless`}}"
   http_directory: http
@@ -91,21 +95,26 @@ _builder_common: &builder_common_options
   output_directory: "{{user `vm_name`}}-{{build_type}}"
 
 builders:
+# https://www.packer.io/docs/builders/virtualbox-iso.html
 - type: virtualbox-iso
   <<: *builder_common_options
   guest_os_type: Ubuntu_64
   guest_additions_path: VBoxGuestAdditions_{{.Version}}.iso
   virtualbox_version_file: .vbox_version
+  boot_keygroup_interval: "{{user `boot_keygroup_interval`}}"
+  skip_export: "{{user `skip_export`}}"
   vboxmanage:
   - [modifyvm, '{{.Name}}', --memory, '{{user `memory_mb`}}']
   - [modifyvm, '{{.Name}}', --cpus, '{{user `cpus`}}']
 
+# https://www.packer.io/docs/builders/vmware-iso.html
 - type: vmware-iso
   <<: *builder_common_options
   # Find the right value in the VMX file, under the key "guestOS"
   guest_os_type: ubuntu-64
   tools_upload_flavor: linux
   skip_compaction: false
+  boot_key_interval: "{{user `boot_key_interval`}}"
   vmx_data:
     cpuid.coresPerSocket: '{{user `cpus`}}'
     memsize: '{{user `memory_mb`}}'

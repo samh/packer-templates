@@ -6,6 +6,7 @@
     "memory_mb": "512",
     "vm_name": "packer-ubuntu1804",
     "boot_key_interval": "100ms",
+    "boot_keygroup_interval": "100ms",
     "ansible_playbook_file": "ansible/main.yml",
     "ansible_galaxy_file": "ansible/requirements.yml",
     "ansible_staging_directory": "/opt/packer-ansible",
@@ -68,7 +69,6 @@
       "<enter><wait>"
     ],
     "boot_wait": "10s",
-    "boot_key_interval": "{{user `boot_key_interval`}}",
     "disk_size": "{{user `disk_size_mb`}}",
     "headless": "{{user `headless`}}",
     "http_directory": "http",
@@ -92,6 +92,7 @@
       "guest_os_type": "Ubuntu_64",
       "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
       "virtualbox_version_file": ".vbox_version",
+      "boot_keygroup_interval": "{{user `boot_keygroup_interval`}}",
       "vboxmanage": [
         [
           "modifyvm",
@@ -132,7 +133,6 @@
         "<enter><wait>"
       ],
       "boot_wait": "10s",
-      "boot_key_interval": "{{user `boot_key_interval`}}",
       "disk_size": "{{user `disk_size_mb`}}",
       "headless": "{{user `headless`}}",
       "http_directory": "http",
@@ -155,6 +155,7 @@
       "guest_os_type": "ubuntu-64",
       "tools_upload_flavor": "linux",
       "skip_compaction": false,
+      "boot_key_interval": "{{user `boot_key_interval`}}",
       "vmx_data": {
         "cpuid.coresPerSocket": "{{user `cpus`}}",
         "memsize": "{{user `memory_mb`}}",
@@ -186,7 +187,6 @@
         "<enter><wait>"
       ],
       "boot_wait": "10s",
-      "boot_key_interval": "{{user `boot_key_interval`}}",
       "disk_size": "{{user `disk_size_mb`}}",
       "headless": "{{user `headless`}}",
       "http_directory": "http",
